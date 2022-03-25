@@ -22,7 +22,7 @@ Se necesita entrar en https://exchange.blockchain.com , crear un usuario para lo
 
 Ejemplo de llamada para obtener los datos:
 
-  curl -H "X-API-Token: e3b35a91-ec09-40b1-a2ef-f09f66e1f8d7" -X GET "https://api.blockchain.com/v3/exchange/l3/BTC-USD"
+  curl -H "X-API-Token: <api_token>" -X GET "https://api.blockchain.com/v3/exchange/l3/BTC-USD"
 
 """
 
