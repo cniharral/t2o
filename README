@@ -1,0 +1,31 @@
+El programa realiza una llamada al API Rest de Exchange Blockchain.com, obteniendo la info, y devuelve estadísticas de compras (bids) y ventas (asks): media de cantidad, datos de mayor cantidad, datos de menor cantidad, precio total acumulado y cantidad total acumulada.
+
+Para ejecutar el programa:
+
+$ cd t2o
+$ chmod 755 blockchain.py
+$ ./blockchain.py <api_token>
+o
+$ python3 blockchain.py <api_token>
+
+Ejemplo de resultado de ejecución:
+
+{   'bids': {   'average_qty': 0.38392977264044936,
+                'greater_qty': {   'num': 281489946129883,
+                                   'px': 1.8,
+                                   'qty': 7.46458611},
+                'lesser_qty': {   'num': 281490388492654,
+                                  'px': 38799.37,
+                                  'qty': 0.0005},
+                'total_px': 6078746.52,
+                'total_qty': 68.33949952999997}}
+{   'asks': {   'average_qty': 0.41018238246575345,
+                'greater_qty': {   'num': 281490447317786,
+                                   'px': 47800.0,
+                                   'qty': 6.76659256},
+                'lesser_qty': {   'num': 281489861125395,
+                                  'px': 45500.0,
+                                  'qty': 0.0005},
+                'total_px': 7946015.430000001,
+                'total_qty': 59.88662784000002}}
+
