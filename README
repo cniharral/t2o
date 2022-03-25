@@ -9,6 +9,7 @@ Consideraciones
 El proyecto está implementado sobre la base de un entorno virtualizado con virtualenv (si no se dispone de él se debe instalar con "apt-get install python3-virtualenv"), para lo cual si se quisiera reestablecer se haría:
 
 $ cd t2o
+$ rm -rf venv
 $ virtualenv venv
 $ venv/bin/pip3 install -r requirements.txt (requirements.txt es el registro de paquetes instalados con pip3, que se han obtenido de ejecutar "pip3 freeze > requirements.txt")
 
