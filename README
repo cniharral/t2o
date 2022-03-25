@@ -1,31 +1,65 @@
-El programa realiza una llamada al API Rest de Exchange Blockchain.com, obteniendo la info, y devuelve estadísticas de compras (bids) y ventas (asks): media de cantidad, datos de mayor cantidad, datos de menor cantidad, precio total acumulado y cantidad total acumulada.
+El programa realiza una llamada al API Rest de Exchange Blockchain.com (ver https://api.blockchain.com/v3/), obteniendo la info, y devuelviendo estadísticas de compras (bids) y ventas (asks), y generales.
 
 Para ejecutar el programa:
 
 $ cd t2o
 $ chmod 755 blockchain.py
-$ ./blockchain.py <api_token>
-o
-$ python3 blockchain.py <api_token>
+$ python3 blockchain.py --help
+Usage: 
+  blockchain.py [-t|--api-token] [-c|--crypto <cryptomoneda>] [-r|--realmoney <moneda real>] [-s|--stats <general,bids,asks>] [-h|--help]
 
-Ejemplo de resultado de ejecución:
+Example:
+  blockchain.py -t e3b35a91-ec09-40b1-a2ef-f09f66e1f8d8 -c BTC -r EUR --stats bids
+  blockchain.py -t e3b35a91-ec09-40b1-a2ef-f09f66e1f8d8 -c BTC -r USD --stats asks
+  blockchain.py -t e3b35a91-ec09-40b1-a2ef-f09f66e1f8d8 -c BTC -r GBP --stats general
 
-{   'bids': {   'average_qty': 0.38392977264044936,
-                'greater_qty': {   'num': 281489946129883,
-                                   'px': 1.8,
-                                   'qty': 7.46458611},
-                'lesser_qty': {   'num': 281490388492654,
-                                  'px': 38799.37,
-                                  'qty': 0.0005},
-                'total_px': 6078746.52,
-                'total_qty': 68.33949952999997}}
-{   'asks': {   'average_qty': 0.41018238246575345,
-                'greater_qty': {   'num': 281490447317786,
-                                   'px': 47800.0,
-                                   'qty': 6.76659256},
-                'lesser_qty': {   'num': 281489861125395,
-                                  'px': 45500.0,
-                                  'qty': 0.0005},
-                'total_px': 7946015.430000001,
-                'total_qty': 59.88662784000002}}
+
+Options:
+  -h, --help            show this help message and exit
+  -t API_TOKEN, --api-token=API_TOKEN
+                        [Obligatorio] API token
+  -c CRYPTO, --crypto=CRYPTO
+                        [Obligatorio] Cryptomoneda
+  -r REALMONEY, --realmoney=REALMONEY
+                        [Obligatorio] Moneda real
+  -s STATS, --stats=STATS
+                        [Obligatorio] Estadísticas (con valores: general
+                        [generales], bids [de compras], asks [de ventas])
+
+
+Ejemplos de resultado de ejecución:
+
+$ python3 blockchain.py -t e3b35a91-ec09-40b1-a2ef-f09f66e1f8d7 -c BTC -r GBP --stats bids
+{   'bids': {   'average_value': 6874.837166929839,
+                'greater_value': {   'num': 281645146008101,
+                                     'px': 33924.1,
+                                     'qty': 0.82473509,
+                                     'value': 27978.395666669},
+                'lesser_value': {   'num': 281644432624796,
+                                    'px': 0.01,
+                                    'qty': 3.13037898,
+                                    'value': 0.0313037898},
+                'total_px': 1092017.39,
+                'total_qty': 10.319384759999998}}
+
+python3 blockchain.py -t e3b35a91-ec09-40b1-a2ef-f09f66e1f8d7 -c BTC -r GBP --stats asks   
+{   'asks': {   'average_value': 13182.298724429522,
+                'greater_value': {   'num': 281644906747732,
+                                     'px': 5000000.0,
+                                     'qty': 0.04261786,
+                                     'value': 213089.3},
+                'lesser_value': {   'num': 281645145561610,
+                                    'px': 36258.05,
+                                    'qty': 0.0012625,
+                                    'value': 45.775788125000005},
+                'total_px': 6376390.52,
+                'total_qty': 5.7987527}}
+
+python3 blockchain.py -t e3b35a91-ec09-40b1-a2ef-f09f66e1f8d7 -c BTC -r EUR --stats general
+{   'BTC-EUR': {   'asks': {   'count': 87,
+                               'qty': 5.515624550000003,
+                               'value': 243225.7287139729},
+                   'bids': {   'count': 95,
+                               'qty': 234.11378847,
+                               'value': 394196.96300234634}}}
 
