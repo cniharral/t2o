@@ -32,7 +32,11 @@ import io
 import simplejson
 import numpy as np
 import pprint
+from optparse import OptionParser
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+pp = pprint.PrettyPrinter(indent=4)
 
 class Blockchain:
 	"""Clase maestra que maneja el diálogo con el API Exchange de Blockchain.com
@@ -41,15 +45,6 @@ class Blockchain:
 	baseurl = "https://api.blockchain.com/v3/exchange"
 	api_token = ""
 	data = {}
-	useragents = [
-		"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36",
-		"Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:33.0) Gecko/20100101 Firefox/33.0",
-		"Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 7.1; Trident/5.0)",
-		"Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; InfoPath.2)",
-		"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.0.3705; .NET CLR 1.1.4322)",
-		"Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; InfoPath.2)",
-		"Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0",
-	]
 
 	def __init__ (self, api_token):
 		"""Inicializa la clase.
@@ -76,7 +71,6 @@ class Blockchain:
 
 		curl = pycurl.Curl()
 		curl.setopt(pycurl.URL, url)
-		curl.setopt(pycurl.USERAGENT, self.useragents[-1])
 		curl.setopt(pycurl.HTTPHEADER, [ "X-API-Token: %s" % self.api_token ])
 		curl.setopt(pycurl.FOLLOWLOCATION, True)
 		curl.setopt(pycurl.WRITEFUNCTION, s.write)
@@ -93,26 +87,32 @@ class Blockchain_L3 (Blockchain):
 	"""Clase maestra que maneja el diálogo con el API Exchange de Blockchain.com para la orden l3 ("Level 3 Order Book")
 	"""
 
-	def get_info (self, cryptomoneda, monedareal):
+	symbol = ""
+	crypto = ""
+	realmoney = ""
+
+	def get_info (self, crypto, realmoney):
 		"""Obtiene los datos de compras (bids) y ventas (asks) con respecto a la relación entre la cryptomoneda y moneda real definidas (symbol).
 
         :param order: 
         :type order: str
-        :param cryptomoneda: Cryptomoneda (BTC=bitcoin, ETH=Ethereum, ...)
-        :type cryptomoneda: str
-        :param monedareal: Moneda real (USD=dolar, GBP=libra esterlina, EUR=euro, ...)
-        :type monedareal: str
+        :param crypto: Cryptomoneda (BTC=bitcoin, ETH=Ethereum, ...)
+        :type crypto: str
+        :param realmoney: Moneda real (USD=dolar, GBP=libra esterlina, EUR=euro, ...)
+        :type realmoney: str
         :return: Info
         :rtype: dict
 		"""
 
-		symbol = "%s-%s" % (cryptomoneda, monedareal)
-		order = "l3/%s" % symbol
+		self.crypto = crypto
+		self.realmoney = realmoney
+		self.symbol = "%s-%s" % (crypto, realmoney)
+		order = "l3/%s" % self.symbol
 
 		return super().get_info(order)
 
 
-	def get_stats (self, order_type):
+	def get_stats_bids_asks (self, order_type):
 		"""Obtiene las estadísticas de compras (bids) y ventas (asks):
         + Media de cantidad
         + Datos correspondientes a la mayor cantidad
@@ -122,21 +122,23 @@ class Blockchain_L3 (Blockchain):
 
         :param order_type: "bids" (compras) o "asks" (ventas)
         :type order_type: str
-        :return: Estadísticas de compras y ventas
+        :return r: Estadísticas de compras y ventas
         :rtype: dict
 		"""
 
-		average_qty = np.mean([ bid["qty"] for bid in self.data[order_type] ])
-		max_qty = max(self.data[order_type], key=lambda x: x["qty"])
-		min_qty = min(self.data[order_type], key=lambda x: x["qty"])
+		average_value = np.mean([ bid["qty"]*bid["px"] for bid in self.data[order_type] ])
+		max_value = max(self.data[order_type], key=lambda x: x["qty"]*x["px"])
+		max_value["value"] = max_value["qty"] * max_value["px"]
+		min_value = min(self.data[order_type], key=lambda x: x["qty"]*x["px"])
+		min_value["value"] = min_value["qty"] * min_value["px"]
 		total_qty = sum([ bid["qty"] for bid in self.data[order_type] ])
 		total_px = sum([ bid["px"] for bid in self.data[order_type] ])
 
 		r = {
 			order_type: {
-				"average_qty": average_qty,
-				"greater_qty": max_qty,
-				"lesser_qty": min_qty,
+				"average_value": average_value,
+				"greater_value": max_value,
+				"lesser_value": min_value,
 				"total_qty": total_qty,
 				"total_px": total_px
 			}
@@ -145,14 +147,81 @@ class Blockchain_L3 (Blockchain):
 		return r
 
 
+	def get_stats_general (self):
+		"""Obtiene las estadísticas generales de compras (bids) y ventas (asks):
+        + Número de órdenes de compra.
+        + Número de órdenes de venta.
+        + Valor total de las órdenes de compra.
+        + Valor total de las órdenes de venta.
+        + El total de monedas de las órdenes de compra.
+        + El total de monedas de las órdenes de venta.
+
+        :return r: Estadísticas generales de compras y ventas
+        :rtype: dict
+		"""
+
+		count_bids = len(self.data["bids"])
+		count_asks = len(self.data["asks"])
+		total_qty_bids = sum([ bid["qty"] for bid in self.data["bids"] ])
+		total_qty_asks = sum([ bid["qty"] for bid in self.data["asks"] ])
+		total_value_bids = sum([ bid["qty"]*bid["px"] for bid in self.data["bids"] ])
+		total_value_asks = sum([ bid["qty"]*bid["px"] for bid in self.data["asks"] ])
+
+		r = {
+			self.symbol: {
+				"bids": {
+					"count": count_bids,
+					"qty": total_qty_bids,
+					"value": total_value_bids
+				},
+				"asks": {
+					"count": count_asks,
+					"qty": total_qty_asks,
+					"value": total_value_asks
+				}
+			}
+		}
+
+		return r
+
+
 if __name__ == "__main__":
 
-	(api_token, ) = sys.argv[1:]
+	usage = """
+  %prog [-t|--api-token] [-c|--crypto <cryptomoneda>] [-r|--realmoney <moneda real>] [-s|--stats <general,bids,asks>] [-h|--help]
 
-	bc = Blockchain_L3(api_token)
-	bc.get_info("BTC", "USD")
-	pp = pprint.PrettyPrinter(indent=4)
-	pp.pprint(bc.get_stats("bids"))
-	pp.pprint(bc.get_stats("asks"))
+Example:
+  %prog -t e3b35a91-ec09-40b1-a2ef-f09f66e1f8d8 -c BTC -r EUR --stats bids
+  %prog -t e3b35a91-ec09-40b1-a2ef-f09f66e1f8d8 -c BTC -r USD --stats asks
+  %prog -t e3b35a91-ec09-40b1-a2ef-f09f66e1f8d8 -c BTC -r GBP --stats general
+	"""
+
+	parser = OptionParser(usage)
+	parser.add_option("-t", "--api-token", dest="api_token", default="", help="[Obligatorio] API token")
+	parser.add_option("-c", "--crypto", dest="crypto", default="BTC", help="[Obligatorio] Cryptomoneda")
+	parser.add_option("-r", "--realmoney", dest="realmoney", default="EUR", help="[Obligatorio] Moneda real")
+	parser.add_option("-s", "--stats", dest="stats", default="general", help="[Obligatorio] Estadísticas (con valores: general [generales], bids [de compras], asks [de ventas])")
+
+	(options, args) = parser.parse_args()
+
+	if not options.api_token:
+		print("WARNING: Se necesita el token del API (ver info en https://api.blockchain.com/v3/")
+		print(usage)
+		sys.exit(-1)
+	if options.api_token and options.crypto and options.realmoney:
+		bc = Blockchain_L3(options.api_token)
+		bc.get_info(options.crypto, options.realmoney)
+	if options.stats == "general":
+		pp.pprint(bc.get_stats_general())
+	elif options.stats == "bids":
+		pp.pprint(bc.get_stats_bids_asks("bids"))
+	elif options.stats == "asks":
+		pp.pprint(bc.get_stats_bids_asks("asks"))
+	else:
+		print("WARNING: Valor no soportado")
+		print(usage)
+		sys.exit(-1)
+
+	sys.exit(0)
 
 
