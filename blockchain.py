@@ -35,6 +35,8 @@ import pprint
 
 
 class Blockchain:
+	"""Clase maestra que 
+	"""
 
 	baseurl = "https://api.blockchain.com/v3/exchange"
 	api_token = ""
@@ -59,21 +61,16 @@ class Blockchain:
 		self.api_token = api_token
 
 
-	def get_info (self, cryptomoneda, monedareal, order):
+	def get_info (self, order):
 		"""Obtiene los datos de compras (bids) y ventas (asks) con respecto a la relación entre la cryptomoneda y moneda real definidas (symbol).
 
-        :param cryptomoneda: Cryptomoneda (BTC=bitcoin, ETH=Ethereum, ...)
-        :type cryptomoneda: str
-        :param monedareal: Moneda real (USD=dolar, GBP=libra esterlina, EUR=euro, ...)
-        :type monedareal: str
         :param order: 
         :type order: str
         :return: Info
         :rtype: dict
 		"""
 
-		symbol = "%s-%s" % (cryptomoneda, monedareal)
-		url = "%s/%s/%s" % (self.baseurl, order, symbol)
+		url = "%s/%s" % (self.baseurl, order)
 
 		s = io.BytesIO()
 
@@ -97,6 +94,8 @@ class Blockchain_L3 (Blockchain):
 	def get_info (self, cryptomoneda, monedareal):
 		"""Obtiene los datos de compras (bids) y ventas (asks) con respecto a la relación entre la cryptomoneda y moneda real definidas (symbol).
 
+        :param order: 
+        :type order: str
         :param cryptomoneda: Cryptomoneda (BTC=bitcoin, ETH=Ethereum, ...)
         :type cryptomoneda: str
         :param monedareal: Moneda real (USD=dolar, GBP=libra esterlina, EUR=euro, ...)
@@ -105,7 +104,10 @@ class Blockchain_L3 (Blockchain):
         :rtype: dict
 		"""
 
-		return super().get_info(cryptomoneda, monedareal, order="l3")
+		symbol = "%s-%s" % (cryptomoneda, monedareal)
+		order = "l3/%s" % symbol
+
+		return super().get_info(order)
 
 
 	def get_stats (self, order_type):
@@ -147,8 +149,6 @@ if __name__ == "__main__":
 
 	bc = Blockchain_L3(api_token)
 	bc.get_info("BTC", "USD")
-	#print(bc.get_stats("bids"))
-	#print(bc.get_stats("asks"))
 	pp = pprint.PrettyPrinter(indent=4)
 	pp.pprint(bc.get_stats("bids"))
 	pp.pprint(bc.get_stats("asks"))
