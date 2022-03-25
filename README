@@ -1,8 +1,26 @@
+Descripción
+-----------
+
 El programa realiza una llamada al API Rest de Exchange Blockchain.com (ver https://api.blockchain.com/v3/), obteniendo la info, y devuelviendo estadísticas de compras (bids) y ventas (asks), y generales.
 
-Para ejecutar el programa:
+Consideraciones
+---------------
+
+El proyecto está implementado sobre la base de un entorno virtualizado con virtualenv (si no se dispone de él se debe instalar con "apt-get install python3-virtualenv"), para lo cual si se quisiera reestablecer se haría:
 
 $ cd t2o
+$ virtualenv venv
+$ venv/bin/pip3 install -r requirements.txt (requirements.txt es el registro de paquetes instalados con pip3, que se han obtenido de ejecutar "pip3 freeze > requirements.txt")
+
+Ejecución
+---------
+
+Para ejecutar el programa, podemos ejecutar el módulo directamente con parámetros o podemos poner en marcha el servidor web en Django:
+
+- Directamente con parámetros:
+
+$ cd t2o
+$ cd blockchain/blockchain
 $ chmod 755 blockchain.py
 $ python3 blockchain.py --help
 Usage: 
@@ -62,4 +80,23 @@ python3 blockchain.py -t e3b35a91-ec09-40b1-a2ef-f09f66e1f8d7 -c BTC -r EUR --st
                    'bids': {   'count': 95,
                                'qty': 234.11378847,
                                'value': 394196.96300234634}}}
+
+- A través de Django:
+
+Ponemos en marcha el servidor web:
+
+$ cd t2o
+$ venv/bin/python3 blockchain/manage.py runserver 0.0.0.0:8888 (nótese que tanto la IP como el puerto se pueden cambiar)
+
+Para obtener las estadísticas de compras, en el navegador ejecutaremos la URL "http://<servidor>:8888/get_stats_bids/?crypto=BTC&realmoney=USD", donde BTC y USD son las siglas del bitcoin y el dólar estadounidense, respectivamente.
+
+Para obtener las estadísticas de ventas, en el navegador ejecutaremos la URL "http://<servidor>:8888/get_stats_asks/?crypto=BTC&realmoney=EUR", donde BTC y EUR son las siglas del bitcoin y el euro, respectivamente.
+
+Para obtener las estadísticas generales, en el navegador ejecutaremos la URL "http://<servidor>:8888/get_stats_general/?crypto=BTC&realmoney=GBP", donde BTC y GBP son las siglas del bitcoin y la libra esterlina, respectivamente.
+
+Como comprobación podemos hacer una ejecución desde consola:
+
+$ curl "http://zynetyka.com:8888/get_stats_general/?crypto=BTC&realmoney=USD"
+
+{"BTC-USD": {"bids": {"count": 175, "qty": 77.54611150999999, "value": 2162091.989009613}, "asks": {"count": 136, "qty": 52.08889966, "value": 2413874.9751052023}}}
 
