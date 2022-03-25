@@ -35,7 +35,7 @@ import pprint
 
 
 class Blockchain:
-	"""Clase maestra que 
+	"""Clase maestra que maneja el diálogo con el API Exchange de Blockchain.com
 	"""
 
 	baseurl = "https://api.blockchain.com/v3/exchange"
@@ -90,6 +90,8 @@ class Blockchain:
 
 
 class Blockchain_L3 (Blockchain):
+	"""Clase maestra que maneja el diálogo con el API Exchange de Blockchain.com para la orden l3 ("Level 3 Order Book")
+	"""
 
 	def get_info (self, cryptomoneda, monedareal):
 		"""Obtiene los datos de compras (bids) y ventas (asks) con respecto a la relación entre la cryptomoneda y moneda real definidas (symbol).
