@@ -48,6 +48,8 @@ Options:
 
 Ejemplos de resultado de ejecución:
 
+$ cd t2o
+$ cd blockchain/blockchain
 $ python3 blockchain.py -t e3b35a91-ec09-40b1-a2ef-f09f66e1f8d7 -c BTC -r GBP --stats bids
 {   'bids': {   'average_value': 6874.837166929839,
                 'greater_value': {   'num': 281645146008101,
